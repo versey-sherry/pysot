@@ -6,6 +6,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
+import numpy as np
+import torch
 
 from colorama import Fore, Style
 
@@ -65,3 +67,10 @@ def describe(net, name=None):
         num = len(name)
     _describe(net, lines, num)
     return "\n".join(lines)
+
+
+def bbox_clip(x, min_value, max_value):
+    new_x = max(min_value, min(x, max_value))
+    return new_x
+
+

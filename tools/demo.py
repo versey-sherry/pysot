@@ -13,7 +13,12 @@ from glob import glob
 
 from pysot.core.config import cfg
 from pysot.models.model_builder import ModelBuilder
+#all trackers from pysot
 from pysot.tracker.tracker_builder import build_tracker
+#adding SiamCAR Tracker
+from pysot.tracker.siamcar_tracker import SiamCARTracker
+#SiamCAR uses a older type model snapshot
+from pysot.utils.model_load import load_pretrain
 
 import time
 
@@ -104,13 +109,20 @@ def main():
     # create model
     model = ModelBuilder()
 
-    # load model
-    model.load_state_dict(torch.load(args.snapshot,
-        map_location=device))
-    model.eval().to(device)
+    if 'siamcar' in args.config:
+        model = load_pretrain(model, args.snapshot).eval().to(device)
+        model.eval().to(device)
+        #build tracker
+        tracker = SiamCARTracker(model, cfg.TRACK)
+        hp = {'lr': 0.3, 'penalty_k': 0.04, 'window_lr': 0.4}
+    else:
+        # load model
+        model.load_state_dict(torch.load(args.snapshot,
+            map_location=device))
+        model.eval().to(device)
 
-    # build tracker
-    tracker = build_tracker(model)
+        # build tracker
+        tracker = build_tracker(model)
 
     img_array=[]
     first_frame = True
@@ -119,6 +131,7 @@ def main():
     else:
         video_name = 'webcam'
     cv2.namedWindow(video_name, cv2.WND_PROP_FULLSCREEN)
+    
     for frame in get_frames(args.video_name):
         if first_frame:
             try:
@@ -137,7 +150,12 @@ def main():
         else:
             print('processing frame')
             start = time.time()
-            outputs = tracker.track(frame)
+
+            if 'siamcar' in args.config:
+                outputs=tracker.track(frame, hp)
+            else:
+                outputs = tracker.track(frame)
+            
             print('Frame processing time is {} second'.format(round(time.time() - start, 4)))
             if 'polygon' in outputs:
                 polygon = np.array(outputs['polygon']).astype(np.int32)
@@ -161,8 +179,8 @@ def main():
             if len(img_array)>1:
                 height, width, _ = img_array[0].shape
                 size = (width, height)
-                file_name = 'output' + video_name
-                out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+                file_name = '_'.join(['output', video_name, args.config.split('/')[-2]])+'.avi'
+                out = cv2.VideoWriter(file_name,cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
                 for i in range(len(img_array)):
                     out.write(img_array[i])
                 out.release()

@@ -71,6 +71,8 @@ __C.TRAIN.LOC_WEIGHT = 1.2
 
 __C.TRAIN.MASK_WEIGHT = 1
 
+__C.TRAIN.CEN_WEIGHT = 1.0
+
 __C.TRAIN.PRINT_FREQ = 20
 
 __C.TRAIN.LOG_GRADS = False
@@ -94,6 +96,16 @@ __C.TRAIN.LR_WARMUP.TYPE = 'step'
 __C.TRAIN.LR_WARMUP.EPOCH = 5
 
 __C.TRAIN.LR_WARMUP.KWARGS = CN(new_allowed=True)
+
+__C.TRAIN.NUM_CLASSES = 2
+
+__C.TRAIN.NUM_CONVS = 4
+
+__C.TRAIN.PRIOR_PROB = 0.01
+
+__C.TRAIN.LOSS_ALPHA = 0.25
+
+__C.TRAIN.LOSS_GAMMA = 2.0
 
 # ------------------------------------------------------------------------ #
 # Dataset options
@@ -138,28 +150,40 @@ __C.DATASET.GRAY = 0.0
 __C.DATASET.NAMES = ('VID', 'COCO', 'DET', 'YOUTUBEBB')
 
 __C.DATASET.VID = CN()
-__C.DATASET.VID.ROOT = 'training_dataset/vid/crop511'
+__C.DATASET.VID.ROOT = 'training_dataset/vid/crop511' # VID dataset path
 __C.DATASET.VID.ANNO = 'training_dataset/vid/train.json'
 __C.DATASET.VID.FRAME_RANGE = 100
 __C.DATASET.VID.NUM_USE = 100000  # repeat until reach NUM_USE
 
 __C.DATASET.YOUTUBEBB = CN()
-__C.DATASET.YOUTUBEBB.ROOT = 'training_dataset/yt_bb/crop511'
+__C.DATASET.YOUTUBEBB.ROOT = 'training_dataset/yt_bb/crop511' # YOUTUBEBB dataset path
 __C.DATASET.YOUTUBEBB.ANNO = 'training_dataset/yt_bb/train.json'
 __C.DATASET.YOUTUBEBB.FRAME_RANGE = 3
 __C.DATASET.YOUTUBEBB.NUM_USE = -1  # use all not repeat
 
 __C.DATASET.COCO = CN()
-__C.DATASET.COCO.ROOT = 'training_dataset/coco/crop511'
+__C.DATASET.COCO.ROOT = 'training_dataset/coco/crop511' # COCO dataset path
 __C.DATASET.COCO.ANNO = 'training_dataset/coco/train2017.json'
 __C.DATASET.COCO.FRAME_RANGE = 1
 __C.DATASET.COCO.NUM_USE = -1
 
 __C.DATASET.DET = CN()
-__C.DATASET.DET.ROOT = 'training_dataset/det/crop511'
+__C.DATASET.DET.ROOT = 'training_dataset/det/crop511' # DET dataset path
 __C.DATASET.DET.ANNO = 'training_dataset/det/train.json'
 __C.DATASET.DET.FRAME_RANGE = 1
 __C.DATASET.DET.NUM_USE = -1
+
+__C.DATASET.GOT = CN()
+__C.DATASET.GOT.ROOT = 'train_dataset/got10k/crop511'         # GOT dataset path
+__C.DATASET.GOT.ANNO = 'train_dataset/got10k/train.json'
+__C.DATASET.GOT.FRAME_RANGE = 50
+__C.DATASET.GOT.NUM_USE = 100000
+
+__C.DATASET.LaSOT = CN()
+__C.DATASET.LaSOT.ROOT = 'train_dataset/lasot/crop511'         # LaSOT dataset path
+__C.DATASET.LaSOT.ANNO = 'train_dataset/lasot/train.json'
+__C.DATASET.LaSOT.FRAME_RANGE = 100
+__C.DATASET.LaSOT.NUM_USE = 100000
 
 __C.DATASET.VIDEOS_PER_EPOCH = 600000
 # ------------------------------------------------------------------------ #
@@ -206,6 +230,16 @@ __C.RPN = CN()
 __C.RPN.TYPE = 'MultiRPN'
 
 __C.RPN.KWARGS = CN(new_allowed=True)
+
+# ------------------------------------------------------------------------ #
+# RPN-CAR options
+# ------------------------------------------------------------------------ #
+__C.CAR = CN()
+
+# RPN type
+__C.CAR.TYPE = 'MultiCAR'
+
+__C.CAR.KWARGS = CN(new_allowed=True)
 
 # ------------------------------------------------------------------------ #
 # mask options
@@ -288,3 +322,31 @@ __C.TRACK.MASK_THERSHOLD = 0.30
 
 # Mask output size
 __C.TRACK.MASK_OUTPUT_SIZE = 127
+
+# SiamCAR Config
+__C.TRACK.STRIDE = 8
+
+__C.TRACK.SCORE_SIZE = 25
+
+__C.TRACK.hanming = True
+
+__C.TRACK.NUM_K = 2
+
+__C.TRACK.NUM_N = 1
+
+__C.TRACK.REGION_S = 0.1
+
+__C.TRACK.REGION_L = 0.44
+
+# ------------------------------------------------------------------------ #
+# HP_SEARCH parameters
+# ------------------------------------------------------------------------ #
+__C.HP_SEARCH = CN()
+
+__C.HP_SEARCH.OTB50 = [0.15, 0.1, 0.4]
+
+__C.HP_SEARCH.GOT10K = [0.6, 0.04, 0.1]
+
+__C.HP_SEARCH.UAV123 = [0.39, 0.04, 0.37]
+
+__C.HP_SEARCH.LaSOT = [0.33, 0.04, 0.4]
