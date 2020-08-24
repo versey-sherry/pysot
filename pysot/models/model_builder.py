@@ -32,11 +32,7 @@ class ModelBuilder(nn.Module):
             self.neck = get_neck(cfg.ADJUST.TYPE,
                                  **cfg.ADJUST.KWARGS)
 
-        if cfg.TRACK.TYPE == 'SiamRPNTracker':
-            # build rpn head
-            self.rpn_head = get_rpn_head(cfg.RPN.TYPE,
-                                         **cfg.RPN.KWARGS)
-        else:
+        if cfg.TRACK.TYPE == 'SiamCARTracker':
             # build car head
             self.car_head = CARHead(cfg, 256)
 
@@ -47,6 +43,10 @@ class ModelBuilder(nn.Module):
             self.loss_evaluator = make_siamcar_loss_evaluator(cfg)
 
             self.down = nn.ConvTranspose2d(256 * 3, 256, 1, 1)
+        else:   
+            # build rpn head
+            self.rpn_head = get_rpn_head(cfg.RPN.TYPE,
+                                         **cfg.RPN.KWARGS)
 
         # build mask head
         if cfg.MASK.MASK:
@@ -71,16 +71,7 @@ class ModelBuilder(nn.Module):
             xf = xf[-1]
         if cfg.ADJUST.ADJUST:
             xf = self.neck(xf)
-        if cfg.TRACK.TYPE == 'SiamRPNTracker':
-            cls, loc = self.rpn_head(self.zf, xf)
-            if cfg.MASK.MASK:
-                mask, self.mask_corr_feature = self.mask_head(self.zf, xf)
-            return {
-                    'cls': cls,
-                    'loc': loc,
-                    'mask': mask if cfg.MASK.MASK else None
-                   }
-        else:
+        if cfg.TRACK.TYPE == 'SiamCARTracker':
             features = self.xcorr_depthwise(xf[0],self.zf[0])
             for i in range(len(xf)-1):
                 features_new = self.xcorr_depthwise(xf[i+1],self.zf[i+1])
@@ -92,7 +83,18 @@ class ModelBuilder(nn.Module):
                     'cls': cls,
                     'loc': loc,
                     'cen': cen
-                   }                        
+                   }
+        else:
+            cls, loc = self.rpn_head(self.zf, xf)
+            if cfg.MASK.MASK:
+                mask, self.mask_corr_feature = self.mask_head(self.zf, xf)
+            return {
+                    'cls': cls,
+                    'loc': loc,
+                    'mask': mask if cfg.MASK.MASK else None
+                   }
+
+              
 
     def mask_refine(self, pos):
         return self.refine_head(self.xf, self.mask_corr_feature, pos)
@@ -107,44 +109,7 @@ class ModelBuilder(nn.Module):
     def forward(self, data):
         """ only used in training
         """
-        if cfg.TRACK.TYPE == 'SiamRPNTracker':
-            template = data['template'].cuda()
-            search = data['search'].cuda()
-            label_cls = data['label_cls'].cuda()
-            label_loc = data['label_loc'].cuda()
-            label_loc_weight = data['label_loc_weight'].cuda()
-
-            # get feature
-            zf = self.backbone(template)
-            xf = self.backbone(search)
-            if cfg.MASK.MASK:
-                zf = zf[-1]
-                self.xf_refine = xf[:-1]
-                xf = xf[-1]
-            if cfg.ADJUST.ADJUST:
-                zf = self.neck(zf)
-                xf = self.neck(xf)
-            cls, loc = self.rpn_head(zf, xf)
-
-            # get loss
-            cls = self.log_softmax(cls)
-            cls_loss = select_cross_entropy_loss(cls, label_cls)
-            loc_loss = weight_l1_loss(loc, label_loc, label_loc_weight)
-
-            outputs = {}
-            outputs['total_loss'] = cfg.TRAIN.CLS_WEIGHT * cls_loss + \
-                cfg.TRAIN.LOC_WEIGHT * loc_loss
-            outputs['cls_loss'] = cls_loss
-            outputs['loc_loss'] = loc_loss
-
-            if cfg.MASK.MASK:
-                # TODO
-                mask, self.mask_corr_feature = self.mask_head(zf, xf)
-                mask_loss = None
-                outputs['total_loss'] += cfg.TRAIN.MASK_WEIGHT * mask_loss
-                outputs['mask_loss'] = mask_loss
-            return outputs
-        else:
+        if cfg.TRACK.TYPE == 'SiamCARTracker':
             template = data['template'].cuda()
             search = data['search'].cuda()
             label_cls = data['label_cls'].cuda()
@@ -182,3 +147,41 @@ class ModelBuilder(nn.Module):
             outputs['loc_loss'] = loc_loss
             outputs['cen_loss'] = cen_loss
             return outputs
+        else:
+            template = data['template'].cuda()
+            search = data['search'].cuda()
+            label_cls = data['label_cls'].cuda()
+            label_loc = data['label_loc'].cuda()
+            label_loc_weight = data['label_loc_weight'].cuda()
+
+            # get feature
+            zf = self.backbone(template)
+            xf = self.backbone(search)
+            if cfg.MASK.MASK:
+                zf = zf[-1]
+                self.xf_refine = xf[:-1]
+                xf = xf[-1]
+            if cfg.ADJUST.ADJUST:
+                zf = self.neck(zf)
+                xf = self.neck(xf)
+            cls, loc = self.rpn_head(zf, xf)
+
+            # get loss
+            cls = self.log_softmax(cls)
+            cls_loss = select_cross_entropy_loss(cls, label_cls)
+            loc_loss = weight_l1_loss(loc, label_loc, label_loc_weight)
+
+            outputs = {}
+            outputs['total_loss'] = cfg.TRAIN.CLS_WEIGHT * cls_loss + \
+                cfg.TRAIN.LOC_WEIGHT * loc_loss
+            outputs['cls_loss'] = cls_loss
+            outputs['loc_loss'] = loc_loss
+
+            if cfg.MASK.MASK:
+                # TODO
+                mask, self.mask_corr_feature = self.mask_head(zf, xf)
+                mask_loss = None
+                outputs['total_loss'] += cfg.TRAIN.MASK_WEIGHT * mask_loss
+                outputs['mask_loss'] = mask_loss
+            return outputs
+

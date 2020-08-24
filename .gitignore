@@ -106,3 +106,4 @@ venv.bak/
 testing_dataset/*
 experiments
 .DS_Store
+./demo/
