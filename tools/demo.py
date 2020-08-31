@@ -27,54 +27,31 @@ import time
 
 '''
 python tools/demo.py \
-    --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
-    --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth  \
-    --video demo/bag.avi  \
-    --writeout True
-
-python tools/demo.py \
     --config experiments/siamrpn_mobilev2_l234_dwxcorr/config.yaml \
     --snapshot experiments/siamrpn_mobilev2_l234_dwxcorr/model.pth  \
-    --video demo/bag.avi  \
-    --writeout True
-
-python tools/demo.py \
-    --config experiments/siamrpn_alex_dwxcorr/config.yaml \
-    --snapshot experiments/siamrpn_alex_dwxcorr/model.pth  \
-    --video demo/bag.avi  \
-    --writeout True
-
-python tools/demo.py \
-    --config experiments/siammask_r50_l3/config.yaml \
-    --snapshot experiments/siammask_r50_l3/model.pth  \
-    --video demo/hela.avi  \
-    --writeout True
-
-python tools/demo.py \
-    --config experiments/siamcar_r50/config.yaml \
-    --snapshot experiments/siamcar_r50/model.pth  \
-    --video demo/bag.avi  \
+    --video data/OTB/Subway/img  \
+    --gt data/OTB/Subway/groundtruth_rect.txt  \
     --writeout True
 
 python tools/demo.py \
     --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
     --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth  \
-    --video demo/cat-20/img  \
-    --gt demo/cat-20/groundtruth.txt  \
+    --video data/OTB/Subway/img  \
+    --gt data/OTB/Subway/groundtruth_rect.txt  \
     --writeout True
 
 python tools/demo.py \
     --config experiments/siammask_r50_l3/config.yaml \
     --snapshot experiments/siammask_r50_l3/model.pth  \
-    --video demo/hela.avi \
-    --gt demo/cat-20/groundtruth.txt  \
+    --video data/OTB/Subway/img  \
+    --gt data/OTB/Subway/groundtruth_rect.txt  \
     --writeout True
 
 python tools/demo.py \
     --config experiments/siamcar_r50/config.yaml \
     --snapshot experiments/siamcar_r50/model.pth  \
-    --video demo/cat-20/img  \
-    --gt demo/cat-20/groundtruth.txt  \
+    --video data/OTB/Subway/img  \
+    --gt data/OTB/Subway/groundtruth_rect.txt  \
     --writeout True
 
 '''
@@ -120,15 +97,16 @@ def get_frames(video_name):
         print(os.path.join(video_name, '*.jp*'))
         images = glob(os.path.join(video_name, '*.jp*'))
         #print(images)
+        #control the length of images to control the number of frames
         images = sorted(images,
-                        key=lambda x: int(x.split('/')[-1].split('.')[0]))[0:100]
+                        key=lambda x: int(x.split('/')[-1].split('.')[0]))
         for img in images:
             frame = cv2.imread(img)
             yield frame
 
 
-# computer IoU between prediction and ground truth
-def computer_iou(prediction, gt):
+# compute IoU between prediction and ground truth, bbox format x1,y1,x2,y2
+def compute_iou(prediction, gt):
     #ensure the bounding boxes exist
     assert(prediction[0] <= prediction[2])
     assert(prediction[1] <= prediction[3])
@@ -148,7 +126,7 @@ def computer_iou(prediction, gt):
     predictionArea = (prediction[2] - prediction[0] +1) * (prediction[3] - prediction[1] +1)
     gtArea = (gt[2] - gt[0] + 1) * (gt[3]-gt[1]+1)
 
-    #computer intersection over union
+    #compute intersection over union
     iou = interArea / float(predictionArea+gtArea-interArea)
     return iou
 
@@ -194,10 +172,11 @@ def main():
 
     # process image
     img_array=[]
+    iou_array = []
     first_frame = True
 
     if args.video_name:
-        video_name = args.video_name.split('/')[-1].split('.')[0]
+        video_name = args.video_name.split('/')[-2].split('.')[0]
         print(video_name)
     else:
         video_name = 'webcam'
@@ -217,10 +196,10 @@ def main():
             
             init_start = time.time()
             tracker.init(frame, init_rect)
-            #draw init box with green
+            #draw init box with white
             cv2.rectangle(frame, (init_rect[0], init_rect[1]), 
                 (init_rect[0]+init_rect[2], init_rect[1]+init_rect[3]), 
-                (0,255,0), 3)
+                (255,255,255), 3)
             img_array.append(frame)
             first_frame = False
         else:
@@ -243,26 +222,31 @@ def main():
                 frame = cv2.addWeighted(frame, 0.77, mask, 0.23, -1)
             else:
                 bbox = list(map(int, outputs['bbox']))
-                #draw predicted bounding box with green
+                bbox = [bbox[0], bbox[1], bbox[0]+bbox[2], bbox[1]+bbox[3]]
+                #draw predicted bounding box with red
                 cv2.rectangle(frame, (bbox[0], bbox[1]),
-                              (bbox[0]+bbox[2], bbox[1]+bbox[3]),
-                              (0, 255, 0), 3)
+                              (bbox[2], bbox[3]),
+                              (0, 0, 255), 3)
                 #draw gt bounding box with red
                 if len(bbox_gt)>0:
                     gt = bbox_gt[a]
+                    gt = [gt[0], gt[1], gt[0]+gt[2], gt[1]+gt[3]]
                     cv2.rectangle(frame, (gt[0], gt[1]), 
-                        (gt[0]+gt[2], gt[1]+gt[3]), 
-                        (0,0,255), 3)
-                    text = 'Frame {}: IoU is {}%'.format(a+1, round((computer_iou(bbox, gt) *100),2))
+                        (gt[2], gt[3]), 
+                        (255,255,255), 3)
+                    text = 'Frame {}: IoU is {}%'.format(a+1, round((compute_iou(bbox, gt) *100),2))
                     cv2.putText(frame, text, (30,30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 2, cv2.LINE_AA) 
+                    iou_array.append(compute_iou(bbox, gt))
                     #print stats
                     print(text)
+                    a +=1
             if args.writeout:
                 img_array.append(frame)
             else:
                 cv2.imshow(video_name, frame)
                 cv2.waitKey(1)
     
+    print('Mean IoU is', round(sum(iou_array)/len(iou_array) *100, 2), '%')
     print('Total processing time for this video is {} seconds'.format(round(time.time() - init_start,4)))
 
     if len(img_array)>1:

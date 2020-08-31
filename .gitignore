@@ -107,3 +107,8 @@ testing_dataset/*
 experiments
 .DS_Store
 demo/
+./data
+*.avi
+data/
+data
+data
