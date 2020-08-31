@@ -199,7 +199,7 @@ def main():
             #draw init box with white
             cv2.rectangle(frame, (init_rect[0], init_rect[1]), 
                 (init_rect[0]+init_rect[2], init_rect[1]+init_rect[3]), 
-                (255,255,255), 3)
+                (255,255,255), 2)
             img_array.append(frame)
             first_frame = False
         else:
@@ -226,14 +226,14 @@ def main():
                 #draw predicted bounding box with red
                 cv2.rectangle(frame, (bbox[0], bbox[1]),
                               (bbox[2], bbox[3]),
-                              (0, 0, 255), 3)
+                              (0, 0, 255), 2)
                 #draw gt bounding box with red
                 if len(bbox_gt)>0:
                     gt = bbox_gt[a]
                     gt = [gt[0], gt[1], gt[0]+gt[2], gt[1]+gt[3]]
                     cv2.rectangle(frame, (gt[0], gt[1]), 
                         (gt[2], gt[3]), 
-                        (255,255,255), 3)
+                        (255,255,255), 2)
                     text = 'Frame {}: IoU is {}%'.format(a+1, round((compute_iou(bbox, gt) *100),2))
                     cv2.putText(frame, text, (30,30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 2, cv2.LINE_AA) 
                     iou_array.append(compute_iou(bbox, gt))
