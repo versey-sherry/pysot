@@ -27,31 +27,10 @@ import time
 
 '''
 python tools/demo.py \
-    --config experiments/siamrpn_mobilev2_l234_dwxcorr/config.yaml \
-    --snapshot experiments/siamrpn_mobilev2_l234_dwxcorr/model.pth  \
-    --video data/OTB/Subway/img  \
-    --gt data/OTB/Subway/groundtruth_rect.txt  \
-    --writeout True
-
-python tools/demo.py \
     --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
     --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth  \
-    --video data/OTB/Subway/img  \
-    --gt data/OTB/Subway/groundtruth_rect.txt  \
-    --writeout True
-
-python tools/demo.py \
-    --config experiments/siammask_r50_l3/config.yaml \
-    --snapshot experiments/siammask_r50_l3/model.pth  \
-    --video data/OTB/Subway/img  \
-    --gt data/OTB/Subway/groundtruth_rect.txt  \
-    --writeout True
-
-python tools/demo.py \
-    --config experiments/siamcar_r50/config.yaml \
-    --snapshot experiments/siamcar_r50/model.pth  \
-    --video data/OTB/Subway/img  \
-    --gt data/OTB/Subway/groundtruth_rect.txt  \
+    --video demo/experiment1.avi \
+    --bbox '976, 529, 36, 26' \
     --writeout True
 
 '''
@@ -157,6 +136,7 @@ def main():
 
     #process initial bounding box
     if args.bbox:
+        print(args.bbox)
         args.bbox = eval(args.bbox)
 
     # load ground truth
@@ -184,6 +164,10 @@ def main():
 
     a = 0
     for frame in get_frames(args.video_name):
+        #cap the video at 300
+        if a > 300:
+            break
+
         if first_frame:
             if args.bbox:
                 init_rect=args.bbox
@@ -196,14 +180,14 @@ def main():
             
             init_start = time.time()
             tracker.init(frame, init_rect)
-            #draw init box with white
+            #draw init box with green
             cv2.rectangle(frame, (init_rect[0], init_rect[1]), 
                 (init_rect[0]+init_rect[2], init_rect[1]+init_rect[3]), 
-                (255,255,255), 2)
+                (0,255,0), 2)
             img_array.append(frame)
             first_frame = False
         else:
-            print('processing frame')
+            print('processing frame', a)
             start = time.time()
 
             if 'siamcar' in args.config:
@@ -227,33 +211,35 @@ def main():
                 cv2.rectangle(frame, (bbox[0], bbox[1]),
                               (bbox[2], bbox[3]),
                               (0, 0, 255), 2)
-                #draw gt bounding box with red
+                #draw gt bounding box with green
                 if len(bbox_gt)>0:
                     gt = bbox_gt[a]
                     gt = [gt[0], gt[1], gt[0]+gt[2], gt[1]+gt[3]]
                     cv2.rectangle(frame, (gt[0], gt[1]), 
                         (gt[2], gt[3]), 
-                        (255,255,255), 2)
+                        (0,255,0), 2)
                     text = 'Frame {}: IoU is {}%'.format(a+1, round((compute_iou(bbox, gt) *100),2))
                     cv2.putText(frame, text, (30,30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,255,0), 2, cv2.LINE_AA) 
                     iou_array.append(compute_iou(bbox, gt))
                     #print stats
                     print(text)
-                    a +=1
+            a+=1
             if args.writeout:
                 img_array.append(frame)
             else:
                 cv2.imshow(video_name, frame)
                 cv2.waitKey(1)
     
-    print('Mean IoU is', round(sum(iou_array)/len(iou_array) *100, 2), '%')
+    if len(iou_array) >0:
+        print('Mean IoU is', round(sum(iou_array)/len(iou_array) *100, 2), '%')
+
     print('Total processing time for this video is {} seconds'.format(round(time.time() - init_start,4)))
 
     if len(img_array)>1:
         height, width, _ = img_array[0].shape
         size = (width, height)
-        file_name = '_'.join(['output', video_name, args.config.split('/')[-2]])+'.avi'
-        out = cv2.VideoWriter(file_name,cv2.VideoWriter_fourcc(*'DIVX'), 15, size)
+        file_name = '_'.join(['output', video_name, args.config.split('/')[-2]])+'.mp4'
+        out = cv2.VideoWriter(file_name,cv2.VideoWriter_fourcc(*'MP4V'), 15, size)
         for i in range(len(img_array)):
             out.write(img_array[i])
         out.release()
