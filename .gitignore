@@ -109,4 +109,5 @@ experiments/*/*.pth
 demo/
 ./data
 *.avi
+data
 
