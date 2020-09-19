@@ -104,11 +104,9 @@ venv.bak/
 .mypy_cache/
 
 testing_dataset/*
-experiments
+experiments/*/*.pth
 .DS_Store
 demo/
 ./data
 *.avi
-data/
-data
-data
+

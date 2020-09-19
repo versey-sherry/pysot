@@ -30,7 +30,7 @@ import time
 python tools/eval_benchmark.py \
     --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
     --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth  \
-    --video_folder data/LS \
+    --video_folder LaSOT \
     --gt groundtruth.txt
 
 python tools/eval_benchmark.py \
@@ -140,7 +140,7 @@ def main():
             print(args.bbox) 
 
         first_frame = True
-        #video_start = time.time()
+        video_start = time.time()
         result_list = []
         b = 0
         
@@ -167,14 +167,15 @@ def main():
         if not os.path.exists('results'):
             os.makedirs('results')
 
-        output_file = os.path.join('results', current_dir+'_result.txt')
+        output_file = os.path.join('results', args.config.split('/')[-2]+current_dir+'_result.txt')
 
         with open(output_file, 'w') as file:
             for det in result_list:
                 det = '{}, {}, {}, {}, {}, {}'.format(det[0], det[1], det[2], det[3], det[4], det[5])
                 print(det)
                 file.write('%s\n' % str(det))
-
+        print('total consumed time is', time.time()-video_start, 'second')
+        print(output_file, 'is done')
 
 
 if __name__ == '__main__':
