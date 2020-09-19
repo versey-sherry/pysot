@@ -134,7 +134,11 @@ def main():
             print('ground truth file is', gt_file)
             with open(gt_file) as file:
                 for line in file:
-                    bbox_gt.append(eval(line))
+                    try:
+                        bbox_gt.append(eval(line))
+                    except:
+                        line = [int(item) for item in line.split()]
+                        bbox_gt.append(line)
             #use ground truth bbox as the init box
             args.bbox = bbox_gt[0]  
             print(args.bbox) 
@@ -171,7 +175,7 @@ def main():
 
         with open(output_file, 'w') as file:
             for det in result_list:
-                det = '{}, {}, {}, {}, {}, {}'.format(det[0], det[1], det[2], det[3], det[4], det[5])
+                det = '{}, {}, {}, {}, {}'.format(det[1], det[2], det[3], det[4], det[5])
                 print(det)
                 file.write('%s\n' % str(det))
         print('total consumed time is', time.time()-video_start, 'second')
