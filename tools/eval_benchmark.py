@@ -25,7 +25,7 @@ from pysot.utils.model_load import load_pretrain
 
 import time
 
-#find . -maxdepth 2  -print -exec mv {} . \;
+
 '''
 python tools/eval_benchmark.py \
     --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
