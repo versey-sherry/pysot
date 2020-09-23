@@ -13,6 +13,7 @@ PySOT has enabled research projects, including: [SiamRPN](http://openaccess.the
 
 The goal of PySOT is to provide a high-quality, high-performance codebase for visual tracking *research*. It is designed to be flexible in order to support rapid implementation and evaluation of novel research. PySOT includes implementations of the following visual tracking algorithms:
 
+- [SiamCar](https://arxiv.org/abs/1911.07241v2)
 - [SiamMask](https://arxiv.org/abs/1812.05050)
 - [SiamRPN++](https://arxiv.org/abs/1812.11703)
 - [DaSiamRPN](https://arxiv.org/abs/1808.06048)
@@ -37,11 +38,34 @@ Evaluation toolkit can support the following datasets:
 
 ## Model Zoo and Baselines
 
-We provide a large set of baseline results and trained models available for download in the [PySOT Model Zoo](MODEL_ZOO.md).
+We provide a large set of baseline results and trained models available for download in the [PySOT Model Zoo](MODEL_ZOO.md). SiamCar baseline results and trained models available for download 
+
+[general_model](https://pan.baidu.com/s/1kIbKxCu1O3PXt9wQik4EVQ)
+[got10k_model](https://pan.baidu.com/s/1KSVgaz5KYP2Ar2DptnfyGQ)
+[LaSOT_model](https://pan.baidu.com/s/1g15wGSq-LoZUBxYQwXCP6w)
+
+and put them into the respected `pysot/experiments` directory.
+
 
 ## Installation
 
 Please find installation instructions for PyTorch and PySOT in [`INSTALL.md`](INSTALL.md).
+
+## Conda Installation
+You can creating an conda environment from an ``environment.yml`` file
+```
+conda env create -f environment.yml
+```
+The first line of the ``yml`` file sets the new environment's name. For more details see [Conda Documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file)
+
+Activate the new environment
+```
+conda activate pysot
+```
+Verify the new environment
+```
+conda env list
+```
 
 ## Quick Start: Using PySOT
 
