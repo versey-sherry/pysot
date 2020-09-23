@@ -25,7 +25,7 @@ from pysot.utils.model_load import load_pretrain
 
 import time
 
-
+#find . -maxdepth 2  -print -exec mv {} . \;
 '''
 python tools/eval_benchmark.py \
     --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
@@ -48,6 +48,8 @@ parser.add_argument('--config', type=str, help='config file')
 parser.add_argument('--snapshot', type=str, help='model name')
 parser.add_argument('--video_folder', default='', type=str,
                     help='folder that contains all the videos')
+parser.add_argument('--save_dir', default='results', type=str,
+                    help='folder that contains all the results')
 parser.add_argument('--bbox', default='', type=str, help='bounding box for consistent user input init box')
 parser.add_argument('--gt', default='', type=str, help='bounding box ground truth name type')
 args = parser.parse_args()
@@ -165,17 +167,19 @@ def main():
                 else:
                     outputs = tracker.track(frame)
                 #output bbox is x, y, h, w format
-                print([b, outputs['bbox'][0], outputs['bbox'][1], outputs['bbox'][2],outputs['bbox'][3], outputs['best_score']])
-                result_list.append([b, outputs['bbox'][0], outputs['bbox'][1], outputs['bbox'][2],outputs['bbox'][3], outputs['best_score']])
+                print([b, outputs['bbox'][0], outputs['bbox'][1], outputs['bbox'][2],outputs['bbox'][3]])
+                result_list.append([b, outputs['bbox'][0], outputs['bbox'][1], outputs['bbox'][2],outputs['bbox'][3]])
 
-        if not os.path.exists('results'):
-            os.makedirs('results')
-
-        output_file = os.path.join('results', args.config.split('/')[-2]+current_dir+'_result.txt')
+        if not os.path.exists(args.save_dir):
+            os.makedirs(args.save_dir)
+        if not os.path.exists(os.path.join(args.save_dir,args.config.split('/')[-2])):
+            os.makedirs(os.path.join(args.save_dir,args.config.split('/')[-2]))
+        
+        output_file = os.path.join(args.save_dir, args.config.split('/')[-2], current_dir+'.txt')
 
         with open(output_file, 'w') as file:
             for det in result_list:
-                det = '{}, {}, {}, {}, {}'.format(det[1], det[2], det[3], det[4], det[5])
+                det = '{}, {}, {}, {}'.format(det[1], det[2], det[3], det[4])
                 print(det)
                 file.write('%s\n' % str(det))
         print('total consumed time is', time.time()-video_start, 'second')
