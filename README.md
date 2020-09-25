@@ -95,17 +95,6 @@ python tools/eval_benchmark.py \
 Prediction results with same format `<x>, <y>, <w>, <h>` will be saved in `results/` directory or other directory specified with `-save_dir` flag.
 
 Arguments:
-
-parser = argparse.ArgumentParser(description='tracking demo')
-parser.add_argument('--config', type=str, help='config file')
-parser.add_argument('--snapshot', type=str, help='model name')
-parser.add_argument('--video_folder', default='', type=str,
-                    help='folder that contains all the videos')
-parser.add_argument('--save_dir', default='results', type=str,
-                    help='folder that contains all the results')
-parser.add_argument('--gt', default='', type=str, help='bounding box ground truth name type')
-args = parser.parse_args()
-
 `--config`: Path to a pretrained model configuration file.
 `--snapshot`: Path to pretrained model weights
 `--video_folder`: Path to the directory that contains all the videos.
@@ -136,6 +125,8 @@ find . -maxdepth 2  -print
 ```
 find . -maxdepth 2  -print -exec mv {} . \;
 ```
+
+The results can be evaluated via [track_eval](https://github.com/versey-sherry/track_eval)
 
 ### Download testing datasets
 Download datasets and put them into `testing_dataset` directory. Jsons of commonly used datasets can be downloaded from [Google Drive](https://drive.google.com/drive/folders/10cfXjwQQBQeu48XMf2xc_W1LucpistPI) or [BaiduYun](https://pan.baidu.com/s/1js0Qhykqqur7_lNRtle1tA#list/path=%2F). If you want to test tracker on new dataset, please refer to [pysot-toolkit](https://github.com/StrangerZhang/pysot-toolkit) to setting `testing_dataset`. 
