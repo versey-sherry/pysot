@@ -92,7 +92,7 @@ python tools/eval_benchmark.py \
     --gt groundtruth_file_name
 
 ```
-Prediction results with same format <x>, <y>, <w>, <h> will be saved in `results/` directory or other directory specified with `-save_dir` flag.
+Prediction results with same format `<x>, <y>, <w>, <h>` will be saved in `results/` directory or other directory specified with `-save_dir` flag.
 
 Arguments:
 
