@@ -27,10 +27,9 @@ import time
 
 '''
 python tools/demo.py \
-    --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
-    --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth  \
+    --config experiments/siammask_r50_l3/config.yaml \
+    --snapshot experiments/siammask_r50_l3/model.pth  \
     --video demo/experiment1.avi \
-    --bbox '976, 529, 36, 26' \
     --writeout True
 
 '''
