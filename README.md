@@ -4,10 +4,7 @@
 
 PySOT has enabled research projects, including: [SiamRPN](http://openaccess.thecvf.com/content_cvpr_2018/html/Li_High_Performance_Visual_CVPR_2018_paper.html), [DaSiamRPN](https://arxiv.org/abs/1808.06048), [SiamRPN++](https://arxiv.org/abs/1812.11703), and [SiamMask](https://arxiv.org/abs/1812.05050).
 
-<div align="center">
-  <img src="demo/output/bag_demo.gif" width="800px" />
-  <p>Example SiamFC, SiamRPN and SiamMask outputs.</p>
-</div>
+This repository additionally added [SiamCar](https://arxiv.org/abs/1911.07241v2)
 
 ## Introduction
 
@@ -38,14 +35,14 @@ Evaluation toolkit can support the following datasets:
 
 ## Model Zoo and Baselines
 
-We provide a large set of baseline results and trained models available for download in the [PySOT Model Zoo](MODEL_ZOO.md). SiamCar baseline results and trained models available for download 
+We provide a large set of baseline results and trained models available for download in the [PySOT Model Zoo](MODEL_ZOO.md). SiamCar baseline results and trained models available for download here:
 
-[general_model](https://pan.baidu.com/s/1kIbKxCu1O3PXt9wQik4EVQ)
-[got10k_model](https://pan.baidu.com/s/1KSVgaz5KYP2Ar2DptnfyGQ)
-[LaSOT_model](https://pan.baidu.com/s/1g15wGSq-LoZUBxYQwXCP6w)
+[general_model](https://pan.baidu.com/s/1kIbKxCu1O3PXt9wQik4EVQ) code: xjpz  
+[got10k_model](https://pan.baidu.com/s/1KSVgaz5KYP2Ar2DptnfyGQ) code: p4zx  
+[LaSOT_model](https://pan.baidu.com/s/1g15wGSq-LoZUBxYQwXCP6w) code: 6wer
 
-and put them into the respected `pysot/experiments` directory.
-
+[Google Drive Link](https://drive.google.com/drive/folders/1yiFJNv5JLBvcdw63nw3aUedoXt7pDGij?usp=sharing)
+and put them into the respected `pysot/experiments` directory. 
 
 ## Installation
 
@@ -83,6 +80,61 @@ python tools/demo.py \
     --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
     --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth
     # --video demo/bag.avi # (in case you don't have webcam)
+```
+
+### Produce Prediction Results for Multiple Videos
+
+```
+python tools/eval_benchmark.py \
+    --config experiments/siamrpn_r50_l234_dwxcorr/config.yaml \
+    --snapshot experiments/siamrpn_r50_l234_dwxcorr/model.pth  \
+    --video_folder data_dir \
+    --gt groundtruth_file_name
+
+```
+Prediction results with same format <x>, <y>, <w>, <h> will be saved in `results/` directory or other directory specified with `-save_dir` flag.
+
+Arguments:
+
+parser = argparse.ArgumentParser(description='tracking demo')
+parser.add_argument('--config', type=str, help='config file')
+parser.add_argument('--snapshot', type=str, help='model name')
+parser.add_argument('--video_folder', default='', type=str,
+                    help='folder that contains all the videos')
+parser.add_argument('--save_dir', default='results', type=str,
+                    help='folder that contains all the results')
+parser.add_argument('--gt', default='', type=str, help='bounding box ground truth name type')
+args = parser.parse_args()
+
+`--config`: Path to a pretrained model configuration file.
+`--snapshot`: Path to pretrained model weights
+`--video_folder`: Path to the directory that contains all the videos.
+`--save_dir`: Directory to save the prediction results. Default is `pygoturn/result` directory
+`--gt`: Ground truth file name such as groundtruth.txt, groundtruth_rect.txt or gt.txt
+
+All the tracking sequences need to be at the same level as follow
+```
+./data
+   ├── VideoA                         # Arbitrary sequence name
+   │   ├── img                        # Directory that has all the frames
+   │   ├── groundtruth.txt            # Txt file of ground truth
+   ├── VideoB                         # Arbitrary sequence name
+   │   ├── img                        # Directory that has all the frames
+   │   ├── groundtruth.txt            # Txt file of ground truth
+   ├── VideoC                         # Arbitrary sequence name
+   │   ├── img                        # Directory that has all the frames
+   │   ├── groundtruth.txt            # Txt file of ground truth
+```
+To move sub directories up a level, you can do the following:
+
+1. Verify finding the sub directories correctly
+```
+find . -maxdepth 2  -print
+```
+
+2. Move the sub directories up
+```
+find . -maxdepth 2  -print -exec mv {} . \;
 ```
 
 ### Download testing datasets
